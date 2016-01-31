@@ -19028,51 +19028,137 @@ process.umask = function() { return 0; };
 var React = require('react');
 var ListItem = require('./ListItem.jsx');
 
-var ingredients = [{ "id": 1, "text": "ham" }, { "id": 2, "text": "cheese" }, { "id": 3, "text": "ham" }];
-
 var List = React.createClass({
-  displayName: 'List',
+    displayName: 'List',
 
-  render: function () {
-    var listItems = ingredients.map(function (item) {
-      return React.createElement(ListItem, { key: item.id, ingredient: item.text });
-    });
-    return React.createElement(
-      'ul',
-      null,
-      listItems
-    );
-  }
+    render: function () {
+        var createItem = function (text, index) {
+            return React.createElement(ListItem, { key: index + text, text: text });
+        };
+
+        return React.createElement(
+            'ul',
+            { className: 'text-capitalize' },
+            this.props.items.map(createItem)
+        );
+    }
 });
 
 module.exports = List;
 
 },{"./ListItem.jsx":160,"react":157}],160:[function(require,module,exports){
 var React = require('react');
+
+//Defining a reusable component (ListItem in this case)
 var ListItem = React.createClass({
-  displayName: 'ListItem',
+    displayName: 'ListItem',
 
-  render: function () {
-    return React.createElement(
-      'li',
-      null,
-      React.createElement(
-        'h4',
-        null,
-        this.props.ingredient
-      )
-    );
-  }
-
+    render: function () {
+        return React.createElement(
+            'li',
+            null,
+            React.createElement(
+                'h4',
+                null,
+                this.props.text
+            )
+        );
+    }
 });
 
+//Export function in order to resuse it
 module.exports = ListItem;
 
 },{"react":157}],161:[function(require,module,exports){
 var React = require('react');
+var List = require('./List.jsx');
+
+var ListManager = React.createClass({
+  displayName: 'ListManager',
+
+  getInitialState: function () {
+    return { items: [], newItemText: '' };
+  }, //Each time users enters text, HTML passed e (element) to the onChange function which says
+  //update the value of newItemText (textBox) to the current value of user input
+  onChange: function (e) {
+    this.setState({
+      newItemText: e.target.value
+    });
+  },
+  //e the element which is passed, handleSubmit is the function which handles the submission of an item
+  handleSubmit: function (e) {
+    //because we are not handling the button submit but through the form
+    e.preventDefault();
+    //this.state is when you have data that can change
+    var currentItems = this.state.items;
+    //add curreneItems to newItemText
+    currentItems.push(this.state.newItemText);
+    //update items array and set the newItemText to empty(textbox)
+    this.setState({
+      items: currentItems, newItemText: ''
+    });
+  },
+  render: function () {
+    var panelHeadingStyle = {};
+
+    var divStyle = {
+      marginTop: 10
+    };
+
+    if (this.props.panelHeadingColor) {
+      panelHeadingStyle.background = this.props.panelHeadingColor;
+    }
+
+    return React.createElement(
+      'div',
+      { style: divStyle, className: 'col-sm-4' },
+      React.createElement(
+        'div',
+        { className: 'panel panel-primary' },
+        React.createElement(
+          'div',
+          { style: panelHeadingStyle, className: 'panel-heading' },
+          React.createElement(
+            'h3',
+            null,
+            this.props.title
+          )
+        ),
+        React.createElement(
+          'div',
+          { className: 'row panel-body' },
+          React.createElement(
+            'form',
+            { onSubmit: this.handleSubmit },
+            React.createElement(
+              'div',
+              { className: 'col-sm-7' },
+              React.createElement('input', { className: 'form-control', onChange: this.onChange, value: this.state.newItemText })
+            ),
+            React.createElement(
+              'div',
+              { className: 'col-sm-2' },
+              React.createElement(
+                'button',
+                { className: 'btn btn-primary' },
+                'Add'
+              )
+            )
+          )
+        ),
+        React.createElement(List, { items: this.state.items })
+      )
+    );
+  }
+});
+
+module.exports = ListManager;
+
+},{"./List.jsx":159,"react":157}],162:[function(require,module,exports){
+var React = require('react');
 var ReactDom = require('react-dom');
-var List = require('./components/List.jsx');
+var List = require('./components/ListManager.jsx');
 
-ReactDom.render(React.createElement(List, null), document.getElementById('ingredients'));
+ReactDom.render(React.createElement(ListManager, { title: 'Ingredients', panelHeadingColor: 'green' }), document.getElementById('ingredients'));
 
-},{"./components/List.jsx":159,"react":157,"react-dom":1}]},{},[161]);
+},{"./components/ListManager.jsx":161,"react":157,"react-dom":1}]},{},[162]);
